@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -235,20 +236,26 @@
   <form action="https://formspree.io/f/xeokbqge" method="POST" class="popup" onclick="event.stopPropagation()">
     <h3>Email Your Results</h3>
     <p style="text-align: center; margin-bottom: 15px; color: #666;">A personal trainer from Health Hub On Demand will send your results via email or WhatsApp.</p>
+    
     <label for="name">Name</label>
     <input type="text" name="name" required />
-
     <label for="email">Email</label>
     <input type="email" name="email" required />
-
     <label for="phone">Phone Number</label>
     <input type="tel" name="phone" required />
-
     <label style="text-align: center;">
       <input type="checkbox" name="trainer_interest" value="Yes" />
       Would you like the Personal Trainer to discuss your Exercise and Nutrition goals with you?
     </label>
-
+    <!-- 🔒 Hidden fields to include user selections and results -->
+    <input type="hidden" name="gender" id="hiddenGender" />
+    <input type="hidden" name="age" id="hiddenAge" />
+    <input type="hidden" name="height" id="hiddenHeight" />
+    <input type="hidden" name="weight" id="hiddenWeight" />
+    <input type="hidden" name="activity" id="hiddenActivity" />
+    <input type="hidden" name="goal" id="hiddenGoal" />
+    <input type="hidden" name="macroSplit" id="hiddenMacro" />
+    <input type="hidden" name="results" id="hiddenResults" />
     <button type="submit">Send Results</button>
     <button type="button" onclick="closePopup()">Close</button>
   </form>
@@ -264,6 +271,58 @@
 
 <script>
   function showPopup() {
+    // Populate hidden fields with current form data from main page
+    document.getElementById("hiddenGender").value = document.getElementById("gender").value;
+    document.getElementById("hiddenAge").value = document.getElementById("age").value;
+    
+    // Get activity level text (not just the value)
+    const activitySelect = document.getElementById("activity");
+    const activityText = activitySelect.options[activitySelect.selectedIndex].text;
+    document.getElementById("hiddenActivity").value = activityText;
+    
+    // Get goal text (not just the value)
+    const goalSelect = document.getElementById("goal");
+    const goalText = goalSelect.options[goalSelect.selectedIndex].text;
+    document.getElementById("hiddenGoal").value = goalText;
+    
+    // Get macro split text (not just the value)
+    const macroSelect = document.getElementById("macroSplit");
+    const macroText = macroSelect.options[macroSelect.selectedIndex].text;
+    document.getElementById("hiddenMacro").value = macroText;
+    
+    // Get height and weight based on current unit system
+    const isMetric = document.getElementById("metricSection").classList.contains("active");
+    if (isMetric) {
+      const heightValue = document.getElementById("height").value;
+      const weightValue = document.getElementById("weight").value;
+      document.getElementById("hiddenHeight").value = heightValue + " cm";
+      document.getElementById("hiddenWeight").value = weightValue + " kg";
+    } else {
+      const feet = document.getElementById("heightFeet").value || "0";
+      const inches = document.getElementById("heightInches").value || "0";
+      const stone = document.getElementById("weightStone").value || "0";
+      const pounds = document.getElementById("weightPounds").value || "0";
+      document.getElementById("hiddenHeight").value = feet + " ft " + inches + " in";
+      document.getElementById("hiddenWeight").value = stone + " st " + pounds + " lbs";
+    }
+    
+    // Get the results text and clean it up for email
+    const resultsDiv = document.getElementById("results");
+    let resultsText = resultsDiv.innerHTML;
+    
+    // Convert HTML to plain text for better email formatting
+    resultsText = resultsText.replace(/<h3>/g, '\n\n--- ')
+                             .replace(/<\/h3>/g, ' ---')
+                             .replace(/<p><strong>/g, '\n• ')
+                             .replace(/<\/strong>/g, ':')
+                             .replace(/<\/p>/g, '')
+                             .replace(/<p>/g, '\n• ')
+                             .replace(/&nbsp;/g, ' ')
+                             .replace(/\s+/g, ' ')
+                             .trim();
+    
+    document.getElementById("hiddenResults").value = resultsText;
+    
     document.getElementById("popupOverlay").style.display = "flex";
   }
   
